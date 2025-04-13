@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Category Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .category-card img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 class="mb-4 text-primary">Category Management</h2>
+
+    <!-- Add Category Form -->
+    <div class="card p-4 form-section">
+        <h4>Add Category</h4>
+        <form id="categoryForm">
+            <div class="mb-3">
+                <label for="id" class="form-label">ID</label>
+                <input type="number" class="form-control" id="id" required>
+            </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="imageUrl" class="form-label">Image</label>
+                <input type="file" class="form-control" id="imageUrl" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Category</button>
+        </form>
+    </div>
+
+    <!-- Category List -->
+    <div class="row" id="categoryList">
+        <!-- Categories will be loaded here -->
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const authToken = "eyJhbGciOiJIUzUxMiJ9.eyJyb2xlIjoiQWRtaW4iLCJzdWIiOiJrYXZpbmR1dGhpbGFuNEBnbWFpbC5jb20iLCJpYXQiOjE3NDM0OTM2NTIsImV4cCI6MTc0NDUzMDQ1Mn0.b93eiue4MNODDjhS4ufCjy2xmsmJLhWGB5lM7wX6-0Oxy9fRqyH1PRn1jJJ4g26g2Sprot1R8ujsPJFQIRyuQg";
+    const apiBase = "http://localhost:8080/api/categories";
+
+    $(document).ready(function () {
+        loadCategories();
+
+        // Handle form submission
+        $("#categoryForm").submit(function (e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append("id", $("#id").val());
+            formData.append("name", $("#name").val());
+            formData.append("description", $("#description").val());
+            formData.append("imageUrl", $("#imageUrl")[0].files[0]);
+
+            $.ajax({
+                url: apiBase + "/save",
+                type: "POST",
+                headers: {
+                    Authorization: "Bearer " + authToken,
+                    'Content-Type': 'application/json'
+                },
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    alert("Category saved successfully!");
+                    $("#categoryForm")[0].reset();
+                    loadCategories();
+                },
+                error: function () {
+                    alert("Error saving category.");
+                }
+            });
+        });
+    });
+
+    function loadCategories() {
+        $.ajax({
+            url: apiBase + "/getAll",
+            type: "GET",
+            headers: {
+                Authorization: "Bearer " + authToken,
+                'Content-Type': 'application/json'
+            },
+            success: function (res) {
+                const categories = res.content;
+                const container = $("#categoryList");
+                container.empty();
+
+                categories.forEach(category => {
+                    container.append(`
+                        <div class="col-md-4 mb-4">
+                            <div class="card category-card">
+                                <img src="uploads/category/${category.imageUrl}" class="card-img-top" alt="${category.name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${category.name}</h5>
+                                    <p class="card-text">${category.description}</p>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                });
+            },
+            error: function () {
+                alert("Failed to load categories.");
+            }
+        });
+    }
+
+    function deleteCategory(id) {
+        if (confirm("Are you sure you want to delete this category?")) {
+            $.ajax({
+                url: apiBase + "/delete?id=" + id,
+                type: "DELETE",
+                headers: {
+                    Authorization: "Bearer " + authToken,
+                    'Content-Type': 'application/json'
+                },
+                success: function () {
+                    alert("Category deleted.");
+                    loadCategories();
+                },
+                error: function () {
+                    alert("Error deleting category.");
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

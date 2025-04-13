@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            padding: 20px;
+        }
+        .cart-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .cart-item h5 {
+            margin: 0;
+        }
+        .cart-item p {
+            margin: 5px 0;
+        }
+        #cart {
+            margin-top: 20px;
+        }
+        #place-order-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center">Shopping Cart</h1>
+
+    <!-- Add Item to Cart Form -->
+    <div class="mt-4">
+        <h3>Add Item to Cart</h3>
+        <form id="add-item-form">
+            <div class="mb-3">
+                <label for="productId" class="form-label">Product ID</label>
+                <input type="number" class="form-control" id="productId" required>
+            </div>
+            <div class="mb-3">
+                <label for="quantity" class="form-label">Quantity</label>
+                <input type="number" class="form-control" id="quantity" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
+    </div>
+
+    <!-- Cart Items -->
+    <div id="cart">
+        <h3>Your Cart</h3>
+        <div id="cart-items">
+            <!-- Cart items will be dynamically added here -->
+        </div>
+        <button id="place-order-button" class="btn btn-success">Place Order</button>
+    </div>
+
+    <!-- Order Confirmation Message -->
+    <div id="order-confirmation" class="alert alert-success mt-3" style="display: none;">
+        Order placed successfully!
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- jQuery for AJAX -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Custom JavaScript -->
+<script>
+    $(document).ready(function () {
+        const userId = 1; // Replace with the actual user ID (e.g., from session or login)
+
+        // Load cart items for the user
+        function loadCartItems() {
+            $.ajax({
+                url: `/api/cart/${userId}`,
+                method: 'GET',
+                success: function (cart) {
+                    $('#cart-items').empty();
+                    if (cart.cartItems.length === 0) {
+                        $('#cart-items').html('<p>Your cart is empty.</p>');
+                        $('#place-order-button').hide();
+                    } else {
+                        cart.cartItems.forEach(item => {
+                            $('#cart-items').append(`
+                                    <div class="cart-item">
+                                        <h5>Product ID: ${item.productId}</h5>
+                                        <p>Quantity: ${item.quantity}</p>
+                                        <button class="btn btn-danger btn-sm remove-item" data-id="${item.id}">Remove</button>
+                                    </div>
+                                `);
+                        });
+                        $('#place-order-button').show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error loading cart items:', error);
+                }
+            });
+        }
+
+        // Add item to cart
+        $('#add-item-form').submit(function (event) {
+            event.preventDefault();
+            const productId = $('#productId').val();
+            const quantity = $('#quantity').val();
+
+            $.ajax({
+                url: `/api/cart/${userId}/add-item`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ productId: parseInt(productId), quantity: parseInt(quantity) }),
+                success: function () {
+                    loadCartItems(); // Reload cart items after adding
+                    $('#add-item-form')[0].reset(); // Clear the form
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error adding item to cart:', error);
+                }
+            });
+        });
+
+        // Remove item from cart
+        $(document).on('click', '.remove-item', function () {
+            const itemId = $(this).data('id');
+            $.ajax({
+                url: `/api/cart-items/${itemId}`,
+                method: 'DELETE',
+                success: function () {
+                    loadCartItems(); // Reload cart items after removal
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error removing item:', error);
+                }
+            });
+        });
+
+        // Place order
+        $('#place-order-button').click(function () {
+            $.ajax({
+                url: `/api/orders/place/${userId}`,
+                method: 'POST',
+                success: function (order) {
+                    $('#order-confirmation').show();
+                    $('#cart-items').empty();
+                    $('#place-order-button').hide();
+                    console.log('Order placed:', order);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error placing order:', error);
+                }
+            });
+        });
+
+        // Initial load of cart items
+        loadCartItems();
+    });
+</script>
+</body>
+</html>
