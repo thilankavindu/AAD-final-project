@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Categories - Bike Spare Parts</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 250px;
+            z-index: 1;
+            background-color: #343a40;
+            padding-top: 20px;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .sidebar .logo {
+            padding: 0 15px 20px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            padding: 12px 20px;
+            transition: 0.3s;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        #alertSuccess, #alertError {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+
+        #alertSuccess.show, #alertError.show {
+            display: block;
+        }
+
+        .category-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .action-buttons .btn {
+            margin-right: 5px;
+        }
+
+        .form-label {
+            font-weight: 500;
+        }
+
+        .required::after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+<!-- Alert messages -->
+<div id="alertSuccess" class="alert alert-success alert-dismissible fade">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <span id="successMessage"></span>
+</div>
+<div id="alertError" class="alert alert-danger alert-dismissible fade">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <span id="errorMessage"></span>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="logo d-flex align-items-center">
+        <i class="fas fa-motorcycle me-2 fa-2x"></i>
+        <h4 class="mb-0">Admin Panel</h4>
+    </div>
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="admin-dashboard.html">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="admin-products.html">
+                <i class="fas fa-box"></i> Products
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="admin-categories.html">
+                <i class="fas fa-tags"></i> Categories
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="admin-orders.html">
+                <i class="fas fa-shopping-cart"></i> Orders
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="admin-users.html">
+                <i class="fas fa-users"></i> Users
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="admin-settings.html">
+                <i class="fas fa-cog"></i> Settings
+            </a>
+        </li>
+        <li class="nav-item mt-5">
+            <a class="nav-link" href="index.html">
+                <i class="fas fa-store"></i> View Store
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <h4 class="navbar-brand">Category Management</h4>
+            <div class="d-flex align-items-center">
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="https://via.placeholder.com/40" alt="Admin" width="32" height="32" class="rounded-circle me-2">
+                        <span id="adminName">Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="adminDropdown">
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><a class="dropdown-item" href="#">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="navLogoutBtn">Sign out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Category Management -->
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Add New Category</h5>
+                        <button class="btn btn-light btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#addCategoryForm">
+                            <i class="fas fa-plus me-1"></i> New Category
+                        </button>
+                    </div>
+                    <div class="card-body collapse" id="addCategoryForm">
+                        <form id="categoryForm" enctype="multipart/form-data">
+                            <input type="hidden" id="categoryId" name="id" value="0">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="categoryName" class="form-label required">Category Name</label>
+                                    <input type="text" class="form-control" id="categoryName" name="name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="categoryDescription" class="form-label required">Description</label>
+                                    <input type="text" class="form-control" id="categoryDescription" name="description" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="categoryImage" class="form-label required">Category Image</label>
+                                    <input type="file" class="form-control" id="categoryImage" name="imageUrl" accept="image/*" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div id="imagePreviewContainer" class="mt-2" style="display: none;">
+                                        <label class="form-label">Image Preview</label>
+                                        <div>
+                                            <img id="imagePreview" src="#" alt="Preview" style="max-width: 100px; max-height: 100px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2" data-bs-toggle="collapse" data-bs-target="#addCategoryForm">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Category</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Categories List</h5>
+                        <div class="d-flex">
+                            <input type="text" class="form-control me-2" id="searchCategory" placeholder="Search categories...">
+                            <button class="btn btn-outline-secondary" id="refreshCategories">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="15%">Image</th>
+                                    <th width="20%">Name</th>
+                                    <th width="40%">Description</th>
+                                    <th width="20%">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody id="categoriesTableBody">
+                                <!-- Categories will be loaded here dynamically -->
+                                <tr>
+                                    <td colspan="5" class="text-center">Loading categories...</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editCategoryForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editCategoryId" name="id">
+                    <div class="mb-3">
+                        <label for="editCategoryName" class="form-label required">Category Name</label>
+                        <input type="text" class="form-control" id="editCategoryName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCategoryDescription" class="form-label required">Description</label>
+                        <input type="text" class="form-control" id="editCategoryDescription" name="description" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editCategoryImage" class="form-label">Category Image</label>
+                        <input type="file" class="form-control" id="editCategoryImage" name="imageUrl" accept="image/*">
+                        <small class="text-muted">Leave empty to keep current image</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Current Image</label>
+                        <div>
+                            <img id="currentCategoryImage" src="#" alt="Current image" style="max-width: 100px; max-height: 100px;">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveEditCategory">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteCategoryModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the category "<span id="deleteCategoryName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone and may affect products associated with this category.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteCategory">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+    // Configuration constants for URLs
+    const API_BASE_URL = "http://localhost:8080";
+    const UPLOADS_BASE_URL = API_BASE_URL + "/uploads";
+
+    let categoryToDeleteId = null;
+
+    $(document).ready(function() {
+        // Check admin authentication
+        checkAdminAuth();
+
+        // Load categories
+        loadCategories();
+
+        // Set up refresh button
+        $("#refreshCategories").click(function() {
+            loadCategories();
+        });
+
+        // Set up search functionality
+        $("#searchCategory").on("keyup", function() {
+            let value = $(this).val().toLowerCase();
+            $("#categoriesTableBody tr").filter(function() {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+            });
+        });
+
+        // Handle category form submission
+        $("#categoryForm").on("submit", function(e) {
+            e.preventDefault();
+            saveCategory();
+        });
+
+        // Handle save edited category
+        $("#saveEditCategory").click(function() {
+            updateCategory();
+        });
+
+        // Handle confirm delete
+        $("#confirmDeleteCategory").click(function() {
+            if (categoryToDeleteId) {
+                deleteCategory(categoryToDeleteId);
+            }
+        });
+
+        // Logout functionality
+        $("#logoutBtn, #navLogoutBtn").click(function(e) {
+            e.preventDefault();
+            logout();
+        });
+
+        // Preview image when selected
+        $("#categoryImage").change(function() {
+            previewImage(this, "#imagePreview", "#imagePreviewContainer");
+        });
+
+        $("#editCategoryImage").change(function() {
+            previewImage(this, "#currentCategoryImage");
+        });
+    });
+
+    // Check admin authentication
+    function checkAdminAuth() {
+        const token = localStorage.getItem('token');
+        const userEmail = localStorage.getItem('userEmail');
+        const userRole = localStorage.getItem('role');
+
+        if (!token || !userEmail) {
+            window.location.href = 'Authentication.html';
+            return;
+        }
+
+        // Check if user is admin
+        if (userRole.toLowerCase() !== 'admin') {
+            showError("Access denied. Admin privileges required.");
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+            return;
+        }
+
+        // Display admin name
+        $("#adminName").text(userEmail);
+    }
+
+    // Load categories from API
+    function loadCategories() {
+        const token = localStorage.getItem('token');
+
+        $.ajax({
+            url: 'http://localhost:8080/api/categories/getAll',
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            success: function(response) {
+                if (response && response.data) {
+                    displayCategories(response.data);
+                } else {
+                    $("#categoriesTableBody").html('<tr><td colspan="5" class="text-center">No categories found</td></tr>');
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading categories:', xhr);
+                showError("Failed to load categories. Please try again.");
+                $("#categoriesTableBody").html('<tr><td colspan="5" class="text-center text-danger">Error loading categories</td></tr>');
+            }
+        });
+    }
+
+    // Display categories in the table
+    function displayCategories(categories) {
+        if (!categories || categories.length === 0) {
+            $("#categoriesTableBody").html('<tr><td colspan="5" class="text-center">No categories found</td></tr>');
+            return;
+        }
+
+        let html = '';
+
+        categories.forEach((category, index) => {
+            html += `
+    <tr>
+        <td>${index + 1}</td>
+        <td>
+<img src="${UPLOADS_BASE_URL}/category/${category.imageUrl}"
+     alt="${category.name}"
+     class="category-image"
+     onerror="this.onerror=null; this.src='assets/img/placeholder.png';">        </td>
+                        <td>${category.name}</td>
+                        <td>${category.description}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editCategory(${category.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="showDeleteModal(${category.id}, '${category.name}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+        });
+
+        $("#categoriesTableBody").html(html);
+    }
+
+    // Save new category
+    function saveCategory() {
+        const token = localStorage.getItem('token');
+        const formData = new FormData(document.getElementById('categoryForm'));
+
+        $.ajax({
+            url: 'http://localhost:8080/api/categories/save',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            success: function(response) {
+                showSuccess("Category saved successfully");
+                $("#categoryForm")[0].reset();
+                $("#imagePreviewContainer").hide();
+                $("#addCategoryForm").collapse('hide');
+                loadCategories();
+            },
+            error: function(xhr) {
+                console.error('Error saving category:', xhr);
+                showError("Failed to save category. Please try again.");
+            }
+        });
+    }
+
+    function editCategory(id) {
+        const token = localStorage.getItem('token');
+
+        $.ajax({
+            url: `http://localhost:8080/api/categories/${id}`,
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            success: function(category) {
+                $("#editCategoryId").val(category.id);
+                $("#editCategoryName").val(category.name);
+                $("#editCategoryDescription").val(category.description);
+
+                // Use the full URL path for the image
+                $("#currentCategoryImage").attr('src', `${UPLOADS_BASE_URL}/category/${category.imageUrl}`)
+                    .on('error', function() {
+                        $(this).attr('src', 'assets/img/placeholder.png');
+                    });
+
+                $("#editCategoryModal").modal('show');
+            },
+            error: function(xhr) {
+                console.error('Error fetching category details:', xhr);
+                showError("Failed to fetch category details. Please try again.");
+            }
+        });
+    }
+
+    // Update category
+    function updateCategory() {
+        const token = localStorage.getItem('token');
+        const id = $("#editCategoryId").val();
+        const formData = new FormData(document.getElementById('editCategoryForm'));
+
+// Explicitly set the ID in the form data
+        formData.set('id', id);
+
+        // If no new image is selected, remove the image field from formData
+        if (!$("#editCategoryImage")[0].files[0]) {
+            formData.delete('imageUrl');
+        }
+
+        $.ajax({
+            url: `http://localhost:8080/api/categories/save`,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            success: function(response) {
+                $("#editCategoryModal").modal('hide');
+                showSuccess("Category updated successfully");
+                loadCategories();
+            },
+            error: function(xhr) {
+                console.error('Error updating category:', xhr);
+                showError("Failed to update category. Please try again.");
+            }
+        });
+    }
+
+    // Show delete confirmation modal
+    function showDeleteModal(id, name) {
+        categoryToDeleteId = id;
+        $("#deleteCategoryName").text(name);
+        $("#deleteCategoryModal").modal('show');
+    }
+
+    // Delete category
+    function deleteCategory(id) {
+        const token = localStorage.getItem('token');
+
+        $.ajax({
+            url: `http://localhost:8080/api/categories/delete/${id}`,
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            success: function() {
+                $("#deleteCategoryModal").modal('hide');
+                showSuccess("Category deleted successfully");
+                loadCategories();
+                categoryToDeleteId = null;
+            },
+            error: function(xhr) {
+                console.error('Error deleting category:', xhr);
+                showError("Failed to delete category. It might be in use by products.");
+            }
+        });
+    }
+
+    // Preview image before upload
+    function previewImage(input, previewElementId, containerElementId) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                $(previewElementId).attr('src', e.target.result);
+                if (containerElementId) {
+                    $(containerElementId).show();
+                }
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // Logout
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('role');
+        window.location.href = 'Authentication.html';
+    }
+
+    // Show success message
+    function showSuccess(message) {
+        $("#successMessage").text(message);
+        $("#alertSuccess").addClass("show");
+        setTimeout(() => $("#alertSuccess").removeClass("show"), 3000);
+    }
+
+    // Show error message
+    function showError(message) {
+        $("#errorMessage").text(message);
+        $("#alertError").addClass("show");
+        setTimeout(() => $("#alertError").removeClass("show"), 3000);
+    }
+
+    // Validate file size
+    function validateFileSize(fileInput, maxSizeMB) {
+        if (fileInput.files && fileInput.files[0]) {
+            const fileSizeMB = fileInput.files[0].size / (1024 * 1024);
+            if (fileSizeMB > maxSizeMB) {
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

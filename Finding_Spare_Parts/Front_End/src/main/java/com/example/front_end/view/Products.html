@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Bike Spare Parts</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 0;
+        }
+
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+
+        .user-dropdown {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+            min-width: 150px;
+            z-index: 1000;
+        }
+
+        .user-dropdown-menu.show {
+            display: block;
+        }
+
+        .user-dropdown-item {
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            display: block;
+        }
+
+        .user-dropdown-item:hover {
+            background: #f5f5f5;
+        }
+
+        .hero-products {
+            background: #3f51b5; /* Add a solid background color instead */
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.6);
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            margin-bottom: 25px;
+            height: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-img-top {
+            height: 200px;
+            object-fit: contain;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .card-text {
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #28a745;
+            margin-bottom: 15px;
+        }
+
+        .stock-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .category-badge {
+            background-color: #f0f0f0;
+            color: #666;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .filter-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .range-slider {
+            margin-bottom: 20px;
+        }
+
+        footer {
+            background-color: #222;
+            color: #fff;
+            padding: 40px 0;
+            margin-top: 50px;
+        }
+
+        .footer-links h5 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: #aaa;
+            text-decoration: none;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+        }
+
+        .social-links a {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .copyright {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+        }
+
+        #alertSuccess, #alertError {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+
+        #alertSuccess.show, #alertError.show {
+            display: block;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #noProducts {
+            text-align: center;
+            padding: 50px;
+            background-color: white;
+            border-radius: 10px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+<!-- Alert messages -->
+<div id="alertSuccess" class="alert alert-success alert-dismissible fade">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <span id="successMessage"></span>
+</div>
+<div id="alertError" class="alert alert-danger alert-dismissible fade">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <span id="errorMessage"></span>
+</div>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="fas fa-motorcycle me-2"></i>Bike Spare Parts
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="categories.html">Categories</a></li>
+                <li class="nav-item"><a class="nav-link active" href="products.html">Products</a></li>
+                <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <a href="cart.html" class="nav-link me-3">
+                    <i class="fas fa-shopping-cart"></i> Cart <span id="cartCount" class="badge bg-danger">0</span>
+                </a>
+                <!-- Login/Register buttons (shown when not logged in) -->
+                <div id="authButtons">
+                    <a href="Authentication.html" class="btn btn-outline-light me-2">Login</a>
+                    <a href="Authentication.html" class="btn btn-light">Register</a>
+                </div>
+                <!-- User dropdown (shown when logged in) -->
+                <div id="userDropdown" class="user-dropdown d-none">
+                    <div class="d-flex align-items-center text-white">
+                        <i class="fas fa-user-circle me-2"></i>
+                        <span id="userNameDisplay">User</span>
+                        <i class="fas fa-chevron-down ms-2"></i>
+                    </div>
+                    <div class="user-dropdown-menu">
+                        <a href="profile.html" class="user-dropdown-item">
+                            <i class="fas fa-user me-2"></i> Profile
+                        </a>
+                        <a href="orders.html" class="user-dropdown-item">
+                            <i class="fas fa-shopping-bag me-2"></i> My Orders
+                        </a>
+                        <a href="#" id="logoutBtn" class="user-dropdown-item">
+                            <i class="fas fa-sign-out-alt me-2"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<div class="hero-products">
+    <div class="container">
+        <h1>Our Products</h1>
+        <p class="lead">Discover high-quality spare parts for your bike</p>
+    </div>
+</div>
+
+<!-- Products Section -->
+<div class="container">
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-lg-3">
+            <div class="filter-section">
+                <h4 class="filter-title">Filters</h4>
+
+                <div class="mb-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Search products...">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <!-- Categories will be loaded here dynamically -->
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Price Range</label>
+                    <div class="d-flex align-items-center mb-2">
+                        <span>$</span>
+                        <input type="number" class="form-control mx-2" id="minPrice" placeholder="Min">
+                        <span>-</span>
+                        <input type="number" class="form-control mx-2" id="maxPrice" placeholder="Max">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="inStockOnly">
+                        <label class="form-check-label" for="inStockOnly">
+                            In Stock Only
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+                <button class="btn btn-outline-secondary w-100 mt-2" id="resetFilters">Reset Filters</button>
+            </div>
+        </div>
+
+        <!-- Products List -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3>All Products</h3>
+                <div class="d-flex align-items-center">
+                    <label class="me-2">Sort by:</label>
+                    <select class="form-select" id="sortProducts">
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="price-asc">Price (Low to High)</option>
+                        <option value="price-desc">Price (High to Low)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="row" id="productsContainer">
+                <!-- Loading indicator -->
+                <div id="loadingProducts" class="col-12">
+                    <div class="loader"></div>
+                    <p class="text-center">Loading products...</p>
+                </div>
+
+                <!-- No products message (initially hidden) -->
+                <div id="noProducts" class="col-12" style="display: none;">
+                    <i class="fas fa-search fa-3x mb-3"></i>
+                    <h4>No products found</h4>
+                    <p>Try adjusting your search or filter criteria</p>
+                    <button class="btn btn-primary" id="clearFiltersBtn">Clear Filters</button>
+                </div>
+
+                <!-- Products will be displayed here dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 footer-links">
+                <h5>Quick Links</h5>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 footer-links">
+                <h5>Customer Service</h5>
+                <ul>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="shipping.html">Shipping Policy</a></li>
+                    <li><a href="returns.html">Returns & Refunds</a></li>
+                    <li><a href="terms.html">Terms & Conditions</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 footer-links">
+                <h5>Contact Us</h5>
+                <p><i class="fas fa-map-marker-alt me-2"></i> 123 Bike Street, City, Country</p>
+                <p><i class="fas fa-phone me-2"></i> +1 234 567 8900</p>
+                <p><i class="fas fa-envelope me-2"></i> info@bikespareparts.com</p>
+                <div class="social-links mt-3">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center copyright">
+            <p>&copy; 2025 Bike Spare Parts. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Configuration constants for URLs
+    const API_BASE_URL = "http://localhost:8080";
+    const UPLOADS_BASE_URL = API_BASE_URL + "/uploads";
+
+    // Global variables for product filtering
+    let allProducts = [];
+    let filteredProducts = [];
+    let categories = [];
+
+    $(document).ready(function() {
+        // Check login status
+        checkLoginStatus();
+
+        // Load categories for filter dropdown
+        loadCategories();
+
+        // Load all products
+        loadProducts();
+
+        // Set up event handlers
+        setupEventHandlers();
+    });
+
+    // Check if user is logged in
+    function checkLoginStatus() {
+        const token = localStorage.getItem('token');
+        const userEmail = localStorage.getItem('userEmail');
+        const userRole = localStorage.getItem('role');
+
+        if (token && userEmail) {
+            // User is logged in
+            $('#authButtons').addClass('d-none');
+            $('#userDropdown').removeClass('d-none');
+            $('#userNameDisplay').text(userEmail);
+
+            // Add admin dashboard link if admin
+            if (userRole === 'Admin') {
+                $('.user-dropdown-menu').prepend(`
+                        <a href="admin-dashboard.html" class="user-dropdown-item">
+                            <i class="fas fa-tachometer-alt me-2"></i> Admin Dashboard
+                        </a>
+                    `);
+            }
+
+            // Get cart count
+            loadCartCount();
+        } else {
+            // User is not logged in
+            $('#authButtons').removeClass('d-none');
+            $('#userDropdown').addClass('d-none');
+        }
+    }
+
+    // Set up all event handlers
+    function setupEventHandlers() {
+        // Toggle user dropdown
+        $('.user-dropdown').click(function(e) {
+            e.stopPropagation();
+            $(this).find('.user-dropdown-menu').toggleClass('show');
+        });
+
+        // Close dropdown when clicking elsewhere
+        $(document).click(function() {
+            $('.user-dropdown-menu').removeClass('show');
+        });
+
+        // Logout functionality
+        $('#logoutBtn').click(function(e) {
+            e.preventDefault();
+            logout();
+        });
+
+        // Apply filters button
+        $('#applyFilters').click(function() {
+            applyFilters();
+        });
+
+        // Reset filters button
+        $('#resetFilters, #clearFiltersBtn').click(function() {
+            resetFilters();
+        });
+
+        // Search input (for real-time filtering)
+        $('#searchInput').on('keyup', function() {
+            applyFilters();
+        });
+
+        // Sort dropdown
+        $('#sortProducts').change(function() {
+            sortProducts();
+        });
+
+        // Category filter
+        $('#categoryFilter').change(function() {
+            applyFilters();
+        });
+
+        // In stock checkbox
+        $('#inStockOnly').change(function() {
+            applyFilters();
+        });
+    }
+
+    // Load categories from API
+    function loadCategories() {
+        // Get token if available
+        const token = localStorage.getItem('token');
+        const headers = {};
+
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        $.ajax({
+            url: `${API_BASE_URL}/api/categories/getAll`,
+            method: 'GET',
+            headers: headers,
+            success: function(response) {
+                if (response && response.data) {
+                    categories = response.data;
+                    populateCategoryFilter(categories);
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading categories:', xhr);
+            }
+        });
+    }
+
+    // Populate category filter dropdown
+    function populateCategoryFilter(categories) {
+        const categorySelect = $('#categoryFilter');
+        categorySelect.empty();
+        categorySelect.append('<option value="">All Categories</option>');
+
+        categories.forEach(category => {
+            categorySelect.append(`<option value="${category.id}">${category.name}</option>`);
+        });
+
+        // Check URL parameters for category filter
+        const urlParams = new URLSearchParams(window.location.search);
+        const categoryParam = urlParams.get('category');
+
+        if (categoryParam) {
+            categorySelect.val(categoryParam);
+        }
+    }
+
+    // Load products from API
+    function loadProducts() {
+        $('#loadingProducts').show();
+        $('#noProducts').hide();
+        $('#productsContainer').find('.product-card').remove();
+
+        // Get token if available
+        const token = localStorage.getItem('token');
+        const headers = {};
+
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+
+        $.ajax({
+            url: `${API_BASE_URL}/api/v1/product/getAll`,
+            method: 'GET',
+            headers: headers,
+            success: function(response) {
+                $('#loadingProducts').hide();
+
+                if (response && response.data && response.data.length > 0) {
+                    allProducts = response.data;
+
+                    // Check URL parameters and apply initial filtering
+                    const urlParams = new URLSearchParams(window.location.search);
+
+                    if (urlParams.has('category') || urlParams.has('search')) {
+                        // Apply filters based on URL parameters
+                        if (urlParams.has('search')) {
+                            $('#searchInput').val(urlParams.get('search'));
+                        }
+                        applyFilters();
+                    } else {
+                        // Show all products if no filters in URL
+                        filteredProducts = [...allProducts];
+                        displayProducts(filteredProducts);
+                    }
+                } else {
+                    $('#noProducts').show();
+                }
+            },
+            error: function(xhr) {
+                $('#loadingProducts').hide();
+                $('#noProducts').show();
+                console.error('Error loading products:', xhr);
+                showError("Failed to load products. Please try again later.");
+            }
+        });
+    }
+
+    // Display products in the grid
+    function displayProducts(products) {
+        const productsContainer = $('#productsContainer');
+
+        // Clear existing products except loader and no products message
+        productsContainer.find('.product-card').remove();
+
+        if (products.length === 0) {
+            $('#noProducts').show();
+            return;
+        }
+
+        $('#noProducts').hide();
+
+        products.forEach(product => {
+            const inStock = product.stockQuantity > 0;
+            const stockBadgeClass = inStock ? 'bg-success' : 'bg-danger';
+            const stockText = inStock ? 'In Stock' : 'Out of Stock';
+
+            const productCard = `
+                    <div class="col-md-6 col-lg-4 product-card">
+                        <div class="card h-100">
+                            <span class="stock-badge ${stockBadgeClass}">${stockText}</span>
+                            <img src="${UPLOADS_BASE_URL}/product/${product.imageUrl}" class="card-img-top"
+                                alt="${product.name}" onerror="this.src='assets/img/placeholder.png';">
+                            <div class="card-body d-flex flex-column">
+                                <span class="category-badge">${product.categoryName}</span>
+                                <h5 class="card-title">${product.name}</h5>
+                                <p class="card-text">${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}</p>
+                                <div class="price mb-3">$${product.price.toFixed(2)}</div>
+                                <div class="mt-auto">
+                                    <a href="product-detail.html?id=${product.id}" class="btn btn-outline-primary w-100">Show Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            productsContainer.append(productCard);
+        });
+    }
+
+    // Apply all filters to products
+    function applyFilters() {
+        const categoryId = $('#categoryFilter').val();
+        const searchText = $('#searchInput').val().toLowerCase();
+        const minPrice = $('#minPrice').val() ? parseFloat($('#minPrice').val()) : 0;
+        const maxPrice = $('#maxPrice').val() ? parseFloat($('#maxPrice').val()) : Number.MAX_VALUE;
+        const inStockOnly = $('#inStockOnly').is(':checked');
+
+        // Filter products based on criteria
+        filteredProducts = allProducts.filter(product => {
+            // Check category filter
+            const categoryMatch = !categoryId || product.categoryId == categoryId;
+
+            // Check search text
+            const searchMatch = !searchText ||
+                product.name.toLowerCase().includes(searchText) ||
+                product.description.toLowerCase().includes(searchText);
+
+            // Check price range
+            const priceMatch = product.price >= minPrice && product.price <= maxPrice;
+
+            // Check stock status
+            const stockMatch = !inStockOnly || product.stockQuantity > 0;
+
+            return categoryMatch && searchMatch && priceMatch && stockMatch;
+        });
+
+        // Apply current sort
+        sortProducts();
+
+        // Display filtered products
+        displayProducts(filteredProducts);
+
+        // Update URL parameters
+        updateUrlParameters();
+    }
+
+    // Sort products based on selected option
+    function sortProducts() {
+        const sortOption = $('#sortProducts').val();
+
+        switch(sortOption) {
+            case 'name-asc':
+                filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name-desc':
+                filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+            case 'price-asc':
+                filteredProducts.sort((a, b) => a.price - b.price);
+                break;
+            case 'price-desc':
+                filteredProducts.sort((a, b) => b.price - a.price);
+                break;
+            default:
+                break;
+        }
+
+        displayProducts(filteredProducts);
+    }
+
+    // Reset all filters to default values
+    function resetFilters() {
+        $('#searchInput').val('');
+        $('#categoryFilter').val('');
+        $('#minPrice').val('');
+        $('#maxPrice').val('');
+        $('#inStockOnly').prop('checked', false);
+        $('#sortProducts').val('name-asc');
+
+        filteredProducts = [...allProducts];
+        displayProducts(filteredProducts);
+
+        // Clear URL parameters
+        history.replaceState(null, '', 'products.html');
+    }
+
+    // Update URL parameters based on applied filters
+    function updateUrlParameters() {
+        const params = new URLSearchParams();
+
+        const categoryId = $('#categoryFilter').val();
+        if (categoryId) {
+            params.set('category', categoryId);
+        }
+
+        const searchText = $('#searchInput').val();
+        if (searchText) {
+            params.set('search', searchText);
+        }
+
+        const minPrice = $('#minPrice').val();
+        if (minPrice) {
+            params.set('min', minPrice);
+        }
+
+        const maxPrice = $('#maxPrice').val();
+        if (maxPrice) {
+            params.set('max', maxPrice);
+        }
+
+        if ($('#inStockOnly').is(':checked')) {
+            params.set('instock', 'true');
+        }
+
+        const sortOption = $('#sortProducts').val();
+        if (sortOption && sortOption !== 'name-asc') {
+            params.set('sort', sortOption);
+        }
+
+        // Update URL without reloading page
+        const newUrl = 'products.html' + (params.toString() ? '?' + params.toString() : '');
+        history.replaceState(null, '', newUrl);
+    }
+
+    // Load cart count
+    function loadCartCount() {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId') || 1;
+
+        if (token) {
+            $.ajax({
+                url: `${API_BASE_URL}/api/cart/${userId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(data) {
+                    let itemCount = 0;
+                    if (data && data.cartItems) {
+                        itemCount = data.cartItems.length;
+                    }
+                    $('#cartCount').text(itemCount);
+                },
+                error: function(xhr) {
+                    console.error('Error loading cart:', xhr);
+                }
+            });
+        }
+    }
+
+    // Logout
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        window.location.href = 'index.html';
+    }
+
+    // Show success message
+    function showSuccess(message) {
+        $("#successMessage").text(message);
+        $("#alertSuccess").addClass("show");
+        setTimeout(() => $("#alertSuccess").removeClass("show"), 3000);
+    }
+
+    // Show error message
+    function showError(message) {
+        $("#errorMessage").text(message);
+        $("#alertError").addClass("show");
+        setTimeout(() => $("#alertError").removeClass("show"), 3000);
+    }
+</script>
+</body>
+</html>
